@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DebtOrganizer UI Preview</title>
+  <style>
+    :root {
+      --bg: #eef1f5;
+      --phone: #f7f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --red: #dc2626;
+      --green: #16a34a;
+      --orange: #f97316;
+      --blue: #2563eb;
+      --indigo: #4f46e5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    header {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px 24px 14px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(280px, 1fr));
+      gap: 18px;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 14px 24px 32px;
+      align-items: start;
+    }
+
+    .phone {
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 390 / 844;
+      border-radius: 34px;
+      background: #101010;
+      padding: 10px;
+      box-shadow: 0 22px 55px rgba(15, 23, 42, .18);
+    }
+
+    .screen {
+      height: 100%;
+      overflow: hidden;
+      border-radius: 26px;
+      background: var(--phone);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .statusbar {
+      height: 42px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 22px 7px;
+      font-size: 13px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .signal {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      color: #111;
+    }
+
+    .nav {
+      padding: 6px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 0 0 auto;
+    }
+
+    .nav h2 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .plus {
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      border: 0;
+      background: #e8edff;
+      color: var(--indigo);
+      font-size: 23px;
+      line-height: 1;
+      font-weight: 500;
+    }
+
+    .content {
+      flex: 1;
+      overflow: hidden;
+      padding: 0 16px 78px;
+    }
+
+    .scroll {
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card,
+    .list-section,
+    .chart-card {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid rgba(229, 231, 235, .75);
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .pressure-top,
+    .row,
+    .metric-top,
+    .section-title,
+    .tabbar,
+    .platform-row-head,
+    .archive-row-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+      padding: 6px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge.red {
+      background: #fee2e2;
+      color: var(--red);
+    }
+
+    .badge.green {
+      background: #dcfce7;
+      color: var(--green);
+    }
+
+    .badge.orange {
+      background: #ffedd5;
+      color: var(--orange);
+    }
+
+    .badge.blue {
+      background: #dbeafe;
+      color: var(--blue);
+    }
+
+    .big-money {
+      margin: 10px 0 6px;
+      color: var(--red);
+      font-size: clamp(30px, 8vw, 40px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 13px;
+      border: 1px solid rgba(229, 231, 235, .75);
+      min-height: 96px;
+    }
+
+    .metric-icon {
+      font-size: 19px;
+    }
+
+    .metric-title {
+      margin: 8px 0 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .chart-card {
+      padding: 14px;
+    }
+
+    .section-title {
+      justify-content: flex-start;
+      margin-bottom: 12px;
+      font-size: 17px;
+      font-weight: 750;
+    }
+
+    .bars {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .bar-track {
+      height: 16px;
+      border-radius: 999px;
+      background: #eef2ff;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--indigo);
+    }
+
+    .bar.orange {
+      background: var(--orange);
+    }
+
+    .bar.red {
+      background: var(--red);
+    }
+
+    .bar.blue {
+      background: var(--blue);
+    }
+
+    .list-section {
+      padding: 0 14px;
+    }
+
+    .list-section h3 {
+      margin: 14px 0 2px;
+      font-size: 17px;
+    }
+
+    .compact-row,
+    .bill-row,
+    .platform-row,
+    .archive-row,
+    .settings-row {
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .compact-row:last-child,
+    .bill-row:last-child,
+    .platform-row:last-child,
+    .archive-row:last-child,
+    .settings-row:last-child {
+      border-bottom: 0;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 750;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .money {
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .search {
+      height: 36px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      background: #e5e7eb;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    .segment {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 2px;
+      margin-bottom: 12px;
+      border-radius: 9px;
+      background: #e5e7eb;
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--muted);
+    }
+
+    .segment span {
+      min-width: 0;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      white-space: nowrap;
+    }
+
+    .segment .active {
+      background: white;
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+    }
+
+    .bill-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .donut-wrap {
+      height: 210px;
+      display: grid;
+      place-items: center;
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid rgba(229, 231, 235, .75);
+      margin-bottom: 12px;
+    }
+
+    .donut {
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      background:
+        conic-gradient(
+          var(--indigo) 0 43%,
+          var(--orange) 43% 67%,
+          var(--red) 67% 83%,
+          var(--blue) 83% 100%
+        );
+      position: relative;
+    }
+
+    .donut::after {
+      content: "平台负债";
+      position: absolute;
+      inset: 45px;
+      border-radius: 50%;
+      background: white;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .month-chart {
+      height: 210px;
+      padding: 18px 14px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: end;
+      gap: 16px;
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid rgba(229, 231, 235, .75);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .month-chart::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 86px;
+      border-top: 2px solid rgba(220, 38, 38, .65);
+      transform: rotate(-8deg);
+      transform-origin: left center;
+    }
+
+    .month-bar {
+      border-radius: 6px 6px 0 0;
+      background: var(--indigo);
+      min-height: 34px;
+      position: relative;
+    }
+
+    .month-bar span {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .archive-grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .archive-grid b {
+      display: block;
+      margin-top: 3px;
+      font-size: 13px;
+    }
+
+    .settings-card {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid rgba(229, 231, 235, .75);
+      padding: 0 14px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .field .value {
+      color: var(--muted);
+    }
+
+    .action {
+      color: var(--blue);
+      font-weight: 650;
+    }
+
+    .danger {
+      color: var(--red);
+      font-weight: 650;
+    }
+
+    .tabbar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 70px;
+      padding: 8px 14px 10px;
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(209, 213, 219, .8);
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      color: #8b95a1;
+      font-size: 10px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .tab .icon {
+      display: block;
+      font-size: 19px;
+      margin-bottom: 2px;
+    }
+
+    .tab.active {
+      color: var(--blue);
+    }
+
+    @media (max-width: 1500px) {
+      main {
+        grid-template-columns: repeat(3, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 940px) {
+      main {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+      }
+    }
+
+    @media (max-width: 620px) {
+      header,
+      main {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DebtOrganizer UI Preview</h1>
+    <p class="subtitle">根据 SwiftUI 源码还原的 5 个主界面：总览、账单、平台、月度、设置。</p>
+  </header>
+
+  <main>
+    <section class="phone" aria-label="总览界面">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
+        <div class="nav"><h2>负债总览</h2></div>
+        <div class="content">
+          <div class="scroll">
+            <div class="card">
+              <div class="pressure-top">
+                <div class="label">⌁ 净现金压力</div>
+                <span class="badge red">需安排资金</span>
+              </div>
+              <div class="big-money">¥4,770</div>
+              <p class="note">总负债 ¥9,770，可用现金 ¥5,000</p>
+            </div>
+
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--indigo)">◷</div>
+                <p class="metric-title">本月待还</p>
+                <p class="metric-value">¥7,720</p>
+              </div>
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--orange)">●</div>
+                <p class="metric-title">未来 7 天</p>
+                <p class="metric-value">¥2,350</p>
+              </div>
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--green)">✓</div>
+                <p class="metric-title">已还金额</p>
+                <p class="metric-value">¥1,600</p>
+              </div>
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--red)">!</div>
+                <p class="metric-title">未还金额</p>
+                <p class="metric-value">¥9,770</p>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="section-title">▥ 平台负债概览</div>
+              <div class="bars">
+                <div class="bar-row"><span>京东金条</span><div class="bar-track"><div class="bar" style="width: 100%"></div></div></div>
+                <div class="bar-row"><span>抖音放心借</span><div class="bar-track"><div class="bar orange" style="width: 35%"></div></div></div>
+                <div class="bar-row"><span>花呗</span><div class="bar-track"><div class="bar red" style="width: 28%"></div></div></div>
+                <div class="bar-row"><span>京东白条</span><div class="bar-track"><div class="bar blue" style="width: 24%"></div></div></div>
+              </div>
+            </div>
+
+            <div class="list-section">
+              <h3>近期待处理</h3>
+              <div class="compact-row row">
+                <div><div class="title">京东白条 · 白条消费</div><div class="sub">最晚 5月15日</div></div>
+                <div><div class="money">¥890</div><span class="badge red">逾期</span></div>
+              </div>
+              <div class="compact-row row">
+                <div><div class="title">花呗 · 消费分期</div><div class="sub">最晚 5月19日</div></div>
+                <div><div class="money">¥1,280</div><span class="badge orange">未还</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <div class="tab active"><span class="icon">◔</span>总览</div>
+          <div class="tab"><span class="icon">▤</span>账单</div>
+          <div class="tab"><span class="icon">▣</span>平台</div>
+          <div class="tab"><span class="icon">□</span>月度</div>
+          <div class="tab"><span class="icon">⚙</span>设置</div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="phone" aria-label="账单界面">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
+        <div class="nav"><h2>账单</h2><button class="plus" aria-label="新增账单">+</button></div>
+        <div class="content">
+          <div class="search">搜索平台、类型或备注</div>
+          <div class="segment"><span class="active">全部</span><span>未还</span><span>已还</span><span>逾期</span></div>
+          <div class="list-section">
+            <h3>账单明细</h3>
+            <div class="bill-row">
+              <div class="row">
+                <div><div class="title">京东白条</div><div class="sub">白条消费</div></div>
+                <div><div class="money">¥890</div><span class="badge red">逾期</span></div>
+              </div>
+              <div class="bill-meta"><span>□ 5月15日</span><span>⚡ 自动扣款</span></div>
+              <div class="sub">家电账单，需尽快处理</div>
+            </div>
+            <div class="bill-row">
+              <div class="row">
+                <div><div class="title">花呗</div><div class="sub">消费分期</div></div>
+                <div><div class="money">¥1,280</div><span class="badge orange">未还</span></div>
+              </div>
+              <div class="bill-meta"><span>□ 5月19日</span><span>⚡ 自动扣款</span></div>
+              <div class="sub">手机分期第 2 期</div>
+            </div>
+            <div class="bill-row">
+              <div class="row">
+                <div><div class="title">京东金条</div><div class="sub">借款</div></div>
+                <div><div class="money">¥2,350</div><span class="badge orange">未还</span></div>
+              </div>
+              <div class="bill-meta"><span>□ 5月23日</span></div>
+              <div class="sub">短期周转</div>
+            </div>
+            <div class="bill-row">
+              <div class="row">
+                <div><div class="title">抖音放心借</div><div class="sub">现金借款</div></div>
+                <div><div class="money">¥1,600</div><span class="badge blue">部分还款</span></div>
+              </div>
+              <div class="bill-meta"><span>□ 5月29日</span></div>
+              <div class="sub">已还 500，剩余待跟进</div>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <div class="tab"><span class="icon">◔</span>总览</div>
+          <div class="tab active"><span class="icon">▤</span>账单</div>
+          <div class="tab"><span class="icon">▣</span>平台</div>
+          <div class="tab"><span class="icon">□</span>月度</div>
+          <div class="tab"><span class="icon">⚙</span>设置</div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="phone" aria-label="平台界面">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
+        <div class="nav"><h2>平台</h2></div>
+        <div class="content">
+          <div class="donut-wrap"><div class="donut"></div></div>
+          <div class="list-section">
+            <h3>平台账户</h3>
+            <div class="platform-row">
+              <div class="platform-row-head"><div class="title">京东金条</div><div class="money">¥5,550</div></div>
+              <div class="row sub"><span>本月 ¥2,350</span><span>5月23日</span></div>
+              <div class="sub">无自动扣款</div>
+            </div>
+            <div class="platform-row">
+              <div class="platform-row-head"><div class="title">抖音放心借</div><div class="money">¥1,600</div></div>
+              <div class="row sub"><span>本月 ¥1,600</span><span>5月29日</span></div>
+              <div class="sub">无自动扣款</div>
+            </div>
+            <div class="platform-row">
+              <div class="platform-row-head"><div class="title">花呗</div><div class="money">¥1,280</div></div>
+              <div class="row sub"><span>本月 ¥1,900</span><span>5月19日</span></div>
+              <div class="sub" style="color: var(--orange)">有自动扣款</div>
+            </div>
+            <div class="platform-row">
+              <div class="platform-row-head"><div class="title">京东白条</div><div class="money">¥1,340</div></div>
+              <div class="row sub"><span>本月 ¥890</span><span>6月6日</span></div>
+              <div class="sub" style="color: var(--orange)">有自动扣款</div>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <div class="tab"><span class="icon">◔</span>总览</div>
+          <div class="tab"><span class="icon">▤</span>账单</div>
+          <div class="tab active"><span class="icon">▣</span>平台</div>
+          <div class="tab"><span class="icon">□</span>月度</div>
+          <div class="tab"><span class="icon">⚙</span>设置</div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="phone" aria-label="月度界面">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
+        <div class="nav"><h2>月度</h2></div>
+        <div class="content">
+          <div class="month-chart">
+            <div class="month-bar" style="height: 52%"><span>2月</span></div>
+            <div class="month-bar" style="height: 68%"><span>3月</span></div>
+            <div class="month-bar" style="height: 64%"><span>4月</span></div>
+            <div class="month-bar" style="height: 100%"><span>5月</span></div>
+          </div>
+          <div class="list-section">
+            <h3>月度归档</h3>
+            <div class="archive-row">
+              <div class="archive-row-head"><div class="title">2026年5月</div><div class="money">¥9,770</div></div>
+              <div class="archive-grid">
+                <span>应还<b>¥7,720</b></span>
+                <span>实还<b>¥0</b></span>
+                <span>逾期<b>1 次</b></span>
+              </div>
+            </div>
+            <div class="archive-row">
+              <div class="archive-row-head"><div class="title">2026年4月</div><div class="money">¥8,200</div></div>
+              <div class="archive-grid">
+                <span>应还<b>¥4,860</b></span>
+                <span>实还<b>¥4,860</b></span>
+                <span>逾期<b>0 次</b></span>
+              </div>
+            </div>
+            <div class="archive-row">
+              <div class="archive-row-head"><div class="title">2026年3月</div><div class="money">¥9,100</div></div>
+              <div class="archive-grid">
+                <span>应还<b>¥5,120</b></span>
+                <span>实还<b>¥4,700</b></span>
+                <span>逾期<b>1 次</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <div class="tab"><span class="icon">◔</span>总览</div>
+          <div class="tab"><span class="icon">▤</span>账单</div>
+          <div class="tab"><span class="icon">▣</span>平台</div>
+          <div class="tab active"><span class="icon">□</span>月度</div>
+          <div class="tab"><span class="icon">⚙</span>设置</div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="phone" aria-label="设置界面">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
+        <div class="nav"><h2>设置</h2></div>
+        <div class="content">
+          <div class="settings-card">
+            <div class="field"><span>可用现金</span><span class="value">5000</span></div>
+            <div class="settings-row action">✓ 保存现金余额</div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-row title">平台名称</div>
+            <div class="settings-row">京东白条</div>
+            <div class="settings-row">京东金条</div>
+            <div class="settings-row">抖音放心借</div>
+            <div class="settings-row">花呗</div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-row title">状态枚举</div>
+            <div class="settings-row" style="color: var(--orange)">● 未还</div>
+            <div class="settings-row" style="color: var(--green)">● 已还</div>
+            <div class="settings-row" style="color: var(--red)">● 逾期</div>
+            <div class="settings-row" style="color: var(--blue)">● 部分还款</div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-row danger">↻ 恢复 Excel 示例数据</div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <div class="tab"><span class="icon">◔</span>总览</div>
+          <div class="tab"><span class="icon">▤</span>账单</div>
+          <div class="tab"><span class="icon">▣</span>平台</div>
+          <div class="tab"><span class="icon">□</span>月度</div>
+          <div class="tab active"><span class="icon">⚙</span>设置</div>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
