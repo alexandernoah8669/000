@@ -157,6 +157,26 @@ final class DebtStore: ObservableObject {
         save()
     }
 
+    @discardableResult
+    func importBills(from url: URL) throws -> BillImportResult {
+        let canAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if canAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let batch = try BillImporter.importedBills(from: url)
+        bills.append(contentsOf: batch.bills)
+        save()
+
+        return BillImportResult(
+            insertedCount: batch.bills.count,
+            skippedCount: batch.skippedCount,
+            warnings: batch.warnings
+        )
+    }
+
     func updateAvailableCash(_ cash: Decimal) {
         availableCash = cash
         save()

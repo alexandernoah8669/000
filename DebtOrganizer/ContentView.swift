@@ -1,5 +1,6 @@
 import Charts
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @StateObject private var store = DebtStore()
@@ -127,6 +128,8 @@ private struct BillsView: View {
     @State private var searchText = ""
     @State private var filter: BillFilter = .all
     @State private var showingAddBill = false
+    @State private var showingImporter = false
+    @State private var importAlert: ImportAlert?
 
     private var filteredBills: [DebtBill] {
         store.bills(matching: searchText, filter: filter)
@@ -135,6 +138,14 @@ private struct BillsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("批量导入") {
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("从 Excel 导入账单", systemImage: "tablecells.badge.ellipsis")
+                    }
+                }
+
                 Section {
                     Picker("状态", selection: $filter) {
                         ForEach(BillFilter.allCases) { filter in
@@ -171,8 +182,38 @@ private struct BillsView: View {
             .sheet(isPresented: $showingAddBill) {
                 BillEditorView()
             }
+            .fileImporter(
+                isPresented: $showingImporter,
+                allowedContentTypes: BillImporter.supportedContentTypes,
+                allowsMultipleSelection: false
+            ) { result in
+                handleImport(result)
+            }
+            .alert(item: $importAlert) { alert in
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    dismissButton: .default(Text("知道了"))
+                )
+            }
         }
     }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else { return }
+            let importResult = try store.importBills(from: url)
+            importAlert = ImportAlert(title: "导入完成", message: importResult.message)
+        } catch {
+            importAlert = ImportAlert(title: "导入失败", message: error.localizedDescription)
+        }
+    }
+}
+
+private struct ImportAlert: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
 }
 
 private struct BillDetailView: View {

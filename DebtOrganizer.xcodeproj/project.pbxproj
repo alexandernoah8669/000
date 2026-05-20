@@ -11,6 +11,7 @@
 		A10000000000000000000012 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* Models.swift */; };
 		A10000000000000000000013 /* DebtStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* DebtStore.swift */; };
 		A10000000000000000000014 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* ContentView.swift */; };
+		A10000000000000000000015 /* BillImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* BillImporter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		A10000000000000000000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A10000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000006 /* DebtOrganizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DebtOrganizer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000007 /* BillImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillImporter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 				A10000000000000000000001 /* DebtOrganizerApp.swift */,
 				A10000000000000000000002 /* Models.swift */,
 				A10000000000000000000003 /* DebtStore.swift */,
+				A10000000000000000000007 /* BillImporter.swift */,
 				A10000000000000000000004 /* ContentView.swift */,
 				A10000000000000000000005 /* Info.plist */,
 			);
@@ -133,6 +136,7 @@
 				A10000000000000000000011 /* DebtOrganizerApp.swift in Sources */,
 				A10000000000000000000012 /* Models.swift in Sources */,
 				A10000000000000000000013 /* DebtStore.swift in Sources */,
+				A10000000000000000000015 /* BillImporter.swift in Sources */,
 				A10000000000000000000014 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
