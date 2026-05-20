@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import UniformTypeIdentifiers
 import zlib
 
@@ -312,6 +313,352 @@ enum BillImporter {
     }
 }
 
+struct BillImportTemplateDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.xlsxWorkbook] }
+    static var writableContentTypes: [UTType] { [.xlsxWorkbook] }
+
+    init() {}
+
+    init(configuration: ReadConfiguration) throws {}
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: BillImportTemplateBuilder.makeWorkbookData())
+    }
+}
+
+private enum BillImportTemplateBuilder {
+    private static let headers = [
+        "平台",
+        "账单类型",
+        "消费/借款日期",
+        "应还金额",
+        "本金",
+        "利息/手续费",
+        "最晚还款日",
+        "状态",
+        "自动扣款",
+        "备注"
+    ]
+
+    private static let guideRows = [
+        ["字段", "是否必填", "填写说明", "示例"],
+        ["平台", "必填", "账单所属平台或账户名称。", "花呗"],
+        ["账单类型", "可选", "不填时默认导入为消费。", "消费分期"],
+        ["消费/借款日期", "可选", "支持 2026-05-20、2026/5/20、2026年5月20日。", "2026-05-20"],
+        ["应还金额", "必填", "填写大于 0 的数字，可带千分位或货币符号。", "1280"],
+        ["本金", "可选", "不填时默认等于应还金额。", "1220"],
+        ["利息/手续费", "可选", "不填时默认 0。", "60"],
+        ["最晚还款日", "必填", "支持日期文本或 Excel 日期单元格。", "2026-05-31"],
+        ["状态", "可选", "支持：未还、已还、逾期、部分还款；不填默认未还。", "未还"],
+        ["自动扣款", "可选", "填写 是/否、true/false、1/0；不填默认否。", "是"],
+        ["备注", "可选", "补充账单说明。", "手机分期第 2 期"],
+        ["回导说明", "", "导入时只读取第一张工作表，请在“账单导入”表填写，不要修改表头。", ""]
+    ]
+
+    static func makeWorkbookData() -> Data {
+        let files: [(String, Data)] = [
+            ("[Content_Types].xml", xmlData(contentTypesXML)),
+            ("_rels/.rels", xmlData(rootRelationshipsXML)),
+            ("docProps/core.xml", xmlData(corePropertiesXML)),
+            ("docProps/app.xml", xmlData(appPropertiesXML)),
+            ("xl/workbook.xml", xmlData(workbookXML)),
+            ("xl/_rels/workbook.xml.rels", xmlData(workbookRelationshipsXML)),
+            ("xl/styles.xml", xmlData(stylesXML)),
+            ("xl/worksheets/sheet1.xml", xmlData(importSheetXML)),
+            ("xl/worksheets/sheet2.xml", xmlData(guideSheetXML))
+        ]
+        return ZipArchiveWriter.makeArchive(files: files)
+    }
+
+    private static var contentTypesXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+          <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+          <Default Extension="xml" ContentType="application/xml"/>
+          <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+          <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+          <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+          <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+          <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+          <Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+        </Types>
+        """
+    }
+
+    private static var rootRelationshipsXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+          <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+          <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+          <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+        </Relationships>
+        """
+    }
+
+    private static var corePropertiesXML: String {
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        return """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <dc:title>账单导入模板</dc:title>
+          <dc:creator>DebtOrganizer</dc:creator>
+          <cp:lastModifiedBy>DebtOrganizer</cp:lastModifiedBy>
+          <dcterms:created xsi:type="dcterms:W3CDTF">\(timestamp)</dcterms:created>
+          <dcterms:modified xsi:type="dcterms:W3CDTF">\(timestamp)</dcterms:modified>
+        </cp:coreProperties>
+        """
+    }
+
+    private static var appPropertiesXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+          <Application>DebtOrganizer</Application>
+          <DocSecurity>0</DocSecurity>
+          <ScaleCrop>false</ScaleCrop>
+          <HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant><vt:variant><vt:i4>2</vt:i4></vt:variant></vt:vector></HeadingPairs>
+          <TitlesOfParts><vt:vector size="2" baseType="lpstr"><vt:lpstr>账单导入</vt:lpstr><vt:lpstr>填写说明</vt:lpstr></vt:vector></TitlesOfParts>
+        </Properties>
+        """
+    }
+
+    private static var workbookXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+          <sheets>
+            <sheet name="账单导入" sheetId="1" r:id="rId1"/>
+            <sheet name="填写说明" sheetId="2" r:id="rId2"/>
+          </sheets>
+        </workbook>
+        """
+    }
+
+    private static var workbookRelationshipsXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+          <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+          <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+          <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+        </Relationships>
+        """
+    }
+
+    private static var stylesXML: String {
+        """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <fonts count="2">
+            <font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font>
+            <font><b/><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font>
+          </fonts>
+          <fills count="3">
+            <fill><patternFill patternType="none"/></fill>
+            <fill><patternFill patternType="gray125"/></fill>
+            <fill><patternFill patternType="solid"><fgColor rgb="FFEAF2FF"/><bgColor indexed="64"/></patternFill></fill>
+          </fills>
+          <borders count="2">
+            <border><left/><right/><top/><bottom/><diagonal/></border>
+            <border><left style="thin"><color rgb="FFD9E2EC"/></left><right style="thin"><color rgb="FFD9E2EC"/></right><top style="thin"><color rgb="FFD9E2EC"/></top><bottom style="thin"><color rgb="FFD9E2EC"/></bottom><diagonal/></border>
+          </borders>
+          <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+          <cellXfs count="3">
+            <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+            <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+            <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+          </cellXfs>
+          <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+        </styleSheet>
+        """
+    }
+
+    private static var importSheetXML: String {
+        let rows = rowXML(values: headers, rowIndex: 1, styleIndex: 1)
+        return """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+          <dimension ref="A1:J1000"/>
+          <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+          <sheetFormatPr defaultRowHeight="18"/>
+          \(columnWidthsXML)
+          <sheetData>
+            \(rows)
+          </sheetData>
+          <autoFilter ref="A1:J1"/>
+          <dataValidations count="2">
+            <dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="H2:H1000"><formula1>"未还,已还,逾期,部分还款"</formula1></dataValidation>
+            <dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="I2:I1000"><formula1>"是,否"</formula1></dataValidation>
+          </dataValidations>
+        </worksheet>
+        """
+    }
+
+    private static var guideSheetXML: String {
+        let rows = guideRows.enumerated()
+            .map { rowXML(values: $0.element, rowIndex: $0.offset + 1, styleIndex: $0.offset == 0 ? 1 : 2) }
+            .joined(separator: "\n")
+        return """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <dimension ref="A1:D\(guideRows.count)"/>
+          <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+          <sheetFormatPr defaultRowHeight="20"/>
+          <cols>
+            <col min="1" max="1" width="18" customWidth="1"/>
+            <col min="2" max="2" width="12" customWidth="1"/>
+            <col min="3" max="3" width="56" customWidth="1"/>
+            <col min="4" max="4" width="22" customWidth="1"/>
+          </cols>
+          <sheetData>
+            \(rows)
+          </sheetData>
+        </worksheet>
+        """
+    }
+
+    private static var columnWidthsXML: String {
+        """
+        <cols>
+          <col min="1" max="1" width="16" customWidth="1"/>
+          <col min="2" max="2" width="16" customWidth="1"/>
+          <col min="3" max="3" width="18" customWidth="1"/>
+          <col min="4" max="6" width="14" customWidth="1"/>
+          <col min="7" max="7" width="18" customWidth="1"/>
+          <col min="8" max="9" width="14" customWidth="1"/>
+          <col min="10" max="10" width="28" customWidth="1"/>
+        </cols>
+        """
+    }
+
+    private static func rowXML(values: [String], rowIndex: Int, styleIndex: Int) -> String {
+        let cells = values.enumerated().map { index, value in
+            cellXML(value: value, columnIndex: index + 1, rowIndex: rowIndex, styleIndex: styleIndex)
+        }
+        .joined()
+        return "<row r=\"\(rowIndex)\">\(cells)</row>"
+    }
+
+    private static func cellXML(value: String, columnIndex: Int, rowIndex: Int, styleIndex: Int) -> String {
+        let reference = "\(columnName(columnIndex))\(rowIndex)"
+        return "<c r=\"\(reference)\" t=\"inlineStr\" s=\"\(styleIndex)\"><is><t>\(escapedXML(value))</t></is></c>"
+    }
+
+    private static func columnName(_ index: Int) -> String {
+        var number = index
+        var letters = ""
+        while number > 0 {
+            let remainder = (number - 1) % 26
+            letters.insert(Character(UnicodeScalar(65 + remainder) ?? "A"), at: letters.startIndex)
+            number = (number - 1) / 26
+        }
+        return letters
+    }
+
+    private static func escapedXML(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
+    }
+
+    private static func xmlData(_ xml: String) -> Data {
+        Data(xml.utf8)
+    }
+}
+
+private enum ZipArchiveWriter {
+    private struct CentralEntry {
+        let nameData: Data
+        let checksum: UInt32
+        let size: UInt32
+        let localHeaderOffset: UInt32
+    }
+
+    static func makeArchive(files: [(String, Data)]) -> Data {
+        var archive = Data()
+        var centralEntries: [CentralEntry] = []
+
+        for (name, data) in files {
+            let nameData = Data(name.utf8)
+            let checksum = checksum(for: data)
+            let size = UInt32(data.count)
+            let localHeaderOffset = UInt32(archive.count)
+
+            archive.appendUInt32(0x04034b50)
+            archive.appendUInt16(20)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt32(checksum)
+            archive.appendUInt32(size)
+            archive.appendUInt32(size)
+            archive.appendUInt16(UInt16(nameData.count))
+            archive.appendUInt16(0)
+            archive.append(nameData)
+            archive.append(data)
+
+            centralEntries.append(
+                CentralEntry(
+                    nameData: nameData,
+                    checksum: checksum,
+                    size: size,
+                    localHeaderOffset: localHeaderOffset
+                )
+            )
+        }
+
+        let centralDirectoryOffset = UInt32(archive.count)
+        for entry in centralEntries {
+            archive.appendUInt32(0x02014b50)
+            archive.appendUInt16(20)
+            archive.appendUInt16(20)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt32(entry.checksum)
+            archive.appendUInt32(entry.size)
+            archive.appendUInt32(entry.size)
+            archive.appendUInt16(UInt16(entry.nameData.count))
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt16(0)
+            archive.appendUInt32(0)
+            archive.appendUInt32(entry.localHeaderOffset)
+            archive.append(entry.nameData)
+        }
+
+        let centralDirectorySize = UInt32(archive.count) - centralDirectoryOffset
+        let entryCount = UInt16(centralEntries.count)
+        archive.appendUInt32(0x06054b50)
+        archive.appendUInt16(0)
+        archive.appendUInt16(0)
+        archive.appendUInt16(entryCount)
+        archive.appendUInt16(entryCount)
+        archive.appendUInt32(centralDirectorySize)
+        archive.appendUInt32(centralDirectoryOffset)
+        archive.appendUInt16(0)
+
+        return archive
+    }
+
+    private static func checksum(for data: Data) -> UInt32 {
+        data.withUnsafeBytes { pointer in
+            guard let baseAddress = pointer.bindMemory(to: Bytef.self).baseAddress else {
+                return UInt32(zlib.crc32(0, nil, 0))
+            }
+            return UInt32(zlib.crc32(0, baseAddress, uInt(data.count)))
+        }
+    }
+}
+
 private struct HeaderMap {
     let columns: [BillColumn: Int]
 
@@ -400,7 +747,7 @@ private extension String.Encoding {
     static let gb18030 = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.GB_18030_2000.rawValue)))
 }
 
-private extension UTType {
+extension UTType {
     static let xlsxWorkbook = UTType(filenameExtension: "xlsx") ?? .data
 }
 
@@ -736,5 +1083,15 @@ private extension Data {
             | UInt32(self[offset + 1]) << 8
             | UInt32(self[offset + 2]) << 16
             | UInt32(self[offset + 3]) << 24
+    }
+
+    mutating func appendUInt16(_ value: UInt16) {
+        var littleEndianValue = value.littleEndian
+        Swift.withUnsafeBytes(of: &littleEndianValue) { append(contentsOf: $0) }
+    }
+
+    mutating func appendUInt32(_ value: UInt32) {
+        var littleEndianValue = value.littleEndian
+        Swift.withUnsafeBytes(of: &littleEndianValue) { append(contentsOf: $0) }
     }
 }

@@ -128,6 +128,7 @@ private struct BillsView: View {
     @State private var searchText = ""
     @State private var filter: BillFilter = .all
     @State private var showingAddBill = false
+    @State private var showingTemplateExporter = false
     @State private var showingImporter = false
     @State private var importAlert: ImportAlert?
 
@@ -138,12 +139,22 @@ private struct BillsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("批量导入") {
+                Section {
+                    Button {
+                        showingTemplateExporter = true
+                    } label: {
+                        Label("下载 Excel 导入模板", systemImage: "square.and.arrow.down")
+                    }
+
                     Button {
                         showingImporter = true
                     } label: {
-                        Label("从 Excel 导入账单", systemImage: "tablecells.badge.ellipsis")
+                        Label("导入填写好的模板", systemImage: "tablecells.badge.ellipsis")
                     }
+                } header: {
+                    Text("批量导入")
+                } footer: {
+                    Text("先下载模板并按表头填写，保存后从这里选择 .xlsx 文件回导。")
                 }
 
                 Section {
@@ -182,6 +193,14 @@ private struct BillsView: View {
             .sheet(isPresented: $showingAddBill) {
                 BillEditorView()
             }
+            .fileExporter(
+                isPresented: $showingTemplateExporter,
+                document: BillImportTemplateDocument(),
+                contentType: .xlsxWorkbook,
+                defaultFilename: "账单导入模板"
+            ) { result in
+                handleTemplateExport(result)
+            }
             .fileImporter(
                 isPresented: $showingImporter,
                 allowedContentTypes: BillImporter.supportedContentTypes,
@@ -196,6 +215,16 @@ private struct BillsView: View {
                     dismissButton: .default(Text("知道了"))
                 )
             }
+        }
+    }
+
+    private func handleTemplateExport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success:
+            importAlert = ImportAlert(title: "模板已导出", message: "填写第一张工作表后，可从“导入填写好的模板”回导。")
+        case .failure(let error):
+            if error is CancellationError { return }
+            importAlert = ImportAlert(title: "导出失败", message: error.localizedDescription)
         }
     }
 
