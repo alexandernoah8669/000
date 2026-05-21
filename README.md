@@ -1,19 +1,22 @@
-# 个人负债整理
+# 个人资产管理系统
 
-一个基于 SwiftUI 的 iOS 原型应用，用来整理个人月度待还账单、平台负债、现金压力和月度归档。
+一个基于 SwiftUI 的 iOS 原型应用，用来统一整理个人资产、负债、净资产和近期现金压力。
 
-## 当前功能
+## 当前结构
 
-- 总览：净现金压力、本月待还、未来 7 天待还、已还/未还金额。
-- 账单：内置 Excel 示例数据，支持搜索、状态筛选、新增、编辑和删除。
-- 导入：在账单页可下载 Excel 导入模板，填写后从 Excel `.xlsx`、CSV 或 TSV 回导账单。
-- 平台：按平台汇总剩余负债、本月应还、下次还款日和自动扣款状态。
-- 月度：展示当前月自动汇总与历史月度归档。
-- 设置：维护可用现金，恢复 Excel 示例数据。
+- 总览：展示净资产、总资产、总负债、负债率、资产结构和近期待还压力。
+- 资产：维护现金类资产、投资类资产、实物资产，支持搜索、分类筛选、新增、编辑和删除。
+- 负债：从原负债系统改造而来，保留账单、平台账户、月度归档、负债设置和 Excel 导入能力。
 
-## Excel 导入格式
+## 资产分类
 
-导入入口在「账单」页顶部。可先下载「账单导入模板」填写，回导时会读取第一张工作表。表格需要包含这些必要表头：
+- 现金类资产：银行卡活期、零钱、余额类账户等可快速动用资金。
+- 投资类资产：基金、股票、养老金等按当前估值记录的投资账户。
+- 实物资产：设备、物品等按可转让估值记录的实物资产。
+
+## 负债导入格式
+
+导入入口在「负债」里的「账单明细」页顶部。可先下载「账单导入模板」填写，回导时会读取第一张工作表。表格需要包含这些必要表头：
 
 - 平台
 - 应还金额
@@ -23,8 +26,6 @@
 
 ## 构建验证
 
-当前机器的模拟器列表为空时，可以先用 SDK 做编译验证：
-
 ```sh
-xcodebuild -project DebtOrganizer.xcodeproj -target DebtOrganizer -configuration Debug -sdk iphonesimulator26.5 SYMROOT=/tmp/DebtOrganizerBuild OBJROOT=/tmp/DebtOrganizerBuild/Intermediates build
+xcodebuild -project DebtOrganizer.xcodeproj -scheme DebtOrganizer -configuration Debug -sdk iphonesimulator SYMROOT=/tmp/DebtOrganizerBuild OBJROOT=/tmp/DebtOrganizerBuild/Intermediates build
 ```

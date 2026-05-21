@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DebtOrganizer UI Preview</title>
+  <title>资产管理系统 UI Preview</title>
   <style>
     :root {
-      --bg: #eef1f5;
+      --bg: #eef2f6;
       --phone: #f7f8fa;
       --card: #ffffff;
       --text: #111827;
       --muted: #6b7280;
       --line: #e5e7eb;
-      --red: #dc2626;
       --green: #16a34a;
+      --red: #dc2626;
       --orange: #f97316;
       --blue: #2563eb;
       --indigo: #4f46e5;
@@ -31,9 +31,9 @@
     }
 
     header {
-      max-width: 1500px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 28px 24px 14px;
+      padding: 28px 24px 12px;
     }
 
     h1 {
@@ -46,15 +46,16 @@
       margin: 0;
       color: var(--muted);
       font-size: 15px;
+      line-height: 1.45;
     }
 
     main {
       display: grid;
-      grid-template-columns: repeat(5, minmax(280px, 1fr));
-      gap: 18px;
-      max-width: 1500px;
+      grid-template-columns: repeat(3, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 14px 24px 32px;
+      padding: 16px 24px 34px;
       align-items: start;
     }
 
@@ -89,13 +90,6 @@
       flex: 0 0 auto;
     }
 
-    .signal {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      color: #111;
-    }
-
     .nav {
       padding: 6px 20px 10px;
       display: flex;
@@ -106,7 +100,7 @@
 
     .nav h2 {
       margin: 0;
-      font-size: 32px;
+      font-size: 31px;
       line-height: 1.05;
       letter-spacing: 0;
     }
@@ -138,24 +132,24 @@
     }
 
     .card,
-    .list-section,
-    .chart-card {
+    .metric,
+    .list-section {
       background: var(--card);
       border-radius: 8px;
-      border: 1px solid rgba(229, 231, 235, .75);
+      border: 1px solid rgba(229, 231, 235, .78);
     }
 
-    .card {
-      padding: 16px;
+    .card,
+    .list-section {
+      padding: 15px;
     }
 
-    .pressure-top,
     .row,
-    .metric-top,
+    .topline,
     .section-title,
     .tabbar,
-    .platform-row-head,
-    .archive-row-head {
+    .asset-row-head,
+    .module-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -179,14 +173,14 @@
       white-space: nowrap;
     }
 
-    .badge.red {
-      background: #fee2e2;
-      color: var(--red);
-    }
-
     .badge.green {
       background: #dcfce7;
       color: var(--green);
+    }
+
+    .badge.red {
+      background: #fee2e2;
+      color: var(--red);
     }
 
     .badge.orange {
@@ -201,18 +195,22 @@
 
     .big-money {
       margin: 10px 0 6px;
-      color: var(--red);
       font-size: clamp(30px, 8vw, 40px);
       line-height: 1;
       font-weight: 800;
       letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .note,
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
     }
 
     .note {
       margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
     }
 
     .metrics {
@@ -222,15 +220,12 @@
     }
 
     .metric {
-      background: var(--card);
-      border-radius: 8px;
       padding: 13px;
-      border: 1px solid rgba(229, 231, 235, .75);
-      min-height: 96px;
+      min-height: 92px;
     }
 
     .metric-icon {
-      font-size: 19px;
+      font-size: 18px;
     }
 
     .metric-title {
@@ -246,10 +241,6 @@
       white-space: nowrap;
     }
 
-    .chart-card {
-      padding: 14px;
-    }
-
     .section-title {
       justify-content: flex-start;
       margin-bottom: 12px;
@@ -259,28 +250,32 @@
 
     .bars {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .bar-row {
       display: grid;
-      grid-template-columns: 74px 1fr;
-      gap: 10px;
+      grid-template-columns: 76px 1fr auto;
       align-items: center;
+      gap: 9px;
       font-size: 12px;
       color: var(--muted);
     }
 
     .bar-track {
-      height: 16px;
+      height: 10px;
       border-radius: 999px;
-      background: #eef2ff;
+      background: #edf0f5;
       overflow: hidden;
     }
 
     .bar {
       height: 100%;
       border-radius: inherit;
+      background: var(--green);
+    }
+
+    .bar.indigo {
       background: var(--indigo);
     }
 
@@ -288,229 +283,96 @@
       background: var(--orange);
     }
 
-    .bar.red {
-      background: var(--red);
-    }
-
     .bar.blue {
       background: var(--blue);
     }
 
-    .list-section {
-      padding: 0 14px;
-    }
-
-    .list-section h3 {
-      margin: 14px 0 2px;
-      font-size: 17px;
-    }
-
-    .compact-row,
-    .bill-row,
-    .platform-row,
-    .archive-row,
-    .settings-row {
-      padding: 13px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .compact-row:last-child,
-    .bill-row:last-child,
-    .platform-row:last-child,
-    .archive-row:last-child,
-    .settings-row:last-child {
-      border-bottom: 0;
-    }
-
-    .title {
-      font-size: 15px;
-      font-weight: 750;
-      line-height: 1.2;
-    }
-
-    .sub {
-      margin-top: 4px;
+    .search,
+    .segment {
+      border-radius: 8px;
+      background: #edf0f5;
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.25;
-    }
-
-    .money {
-      font-size: 15px;
-      font-weight: 800;
-      white-space: nowrap;
+      font-size: 13px;
     }
 
     .search {
-      height: 36px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      background: #e5e7eb;
-      color: #6b7280;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      font-size: 14px;
+      padding: 10px 12px;
     }
 
     .segment {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      padding: 2px;
-      margin-bottom: 12px;
-      border-radius: 9px;
-      background: #e5e7eb;
+      padding: 3px;
+      gap: 2px;
+      text-align: center;
       font-size: 12px;
       font-weight: 650;
-      color: var(--muted);
     }
 
     .segment span {
-      min-width: 0;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 7px;
-      white-space: nowrap;
+      padding: 7px 2px;
+      border-radius: 6px;
     }
 
     .segment .active {
-      background: white;
+      background: var(--card);
       color: var(--text);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, .08);
     }
 
+    .asset-row,
+    .bill-row,
+    .module-row {
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .asset-row:first-of-type,
+    .bill-row:first-of-type,
+    .module-row:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 760;
+    }
+
+    .money {
+      font-size: 15px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .asset-meta,
     .bill-meta {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      margin-top: 8px;
+      margin-top: 7px;
       color: var(--muted);
       font-size: 12px;
     }
 
-    .donut-wrap {
-      height: 210px;
+    .module-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
       display: grid;
       place-items: center;
-      background: var(--card);
-      border-radius: 8px;
-      border: 1px solid rgba(229, 231, 235, .75);
-      margin-bottom: 12px;
+      font-weight: 800;
+      flex: 0 0 auto;
     }
 
-    .donut {
-      width: 168px;
-      height: 168px;
-      border-radius: 50%;
-      background:
-        conic-gradient(
-          var(--indigo) 0 43%,
-          var(--orange) 43% 67%,
-          var(--red) 67% 83%,
-          var(--blue) 83% 100%
-        );
-      position: relative;
+    .module-text {
+      flex: 1;
+      min-width: 0;
     }
 
-    .donut::after {
-      content: "平台负债";
-      position: absolute;
-      inset: 45px;
-      border-radius: 50%;
-      background: white;
-      display: grid;
-      place-items: center;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .month-chart {
-      height: 210px;
-      padding: 18px 14px 16px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      align-items: end;
-      gap: 16px;
-      background: var(--card);
-      border-radius: 8px;
-      border: 1px solid rgba(229, 231, 235, .75);
-      margin-bottom: 12px;
-      position: relative;
-    }
-
-    .month-chart::before {
-      content: "";
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      top: 86px;
-      border-top: 2px solid rgba(220, 38, 38, .65);
-      transform: rotate(-8deg);
-      transform-origin: left center;
-    }
-
-    .month-bar {
-      border-radius: 6px 6px 0 0;
-      background: var(--indigo);
-      min-height: 34px;
-      position: relative;
-    }
-
-    .month-bar span {
-      position: absolute;
-      bottom: -22px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--muted);
-      font-size: 11px;
-      white-space: nowrap;
-    }
-
-    .archive-grid {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      font-size: 12px;
-    }
-
-    .archive-grid b {
-      display: block;
+    .module-text .sub {
       margin-top: 3px;
-      font-size: 13px;
-    }
-
-    .settings-card {
-      background: var(--card);
-      border-radius: 8px;
-      border: 1px solid rgba(229, 231, 235, .75);
-      padding: 0 14px;
-      margin-bottom: 12px;
-    }
-
-    .field {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--line);
-      font-size: 15px;
-    }
-
-    .field .value {
-      color: var(--muted);
-    }
-
-    .action {
-      color: var(--blue);
-      font-weight: 650;
-    }
-
-    .danger {
-      color: var(--red);
-      font-weight: 650;
     }
 
     .tabbar {
@@ -518,314 +380,281 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 70px;
-      padding: 8px 14px 10px;
-      background: rgba(255, 255, 255, .92);
+      height: 68px;
+      padding: 7px 18px 12px;
+      border-top: 1px solid rgba(229, 231, 235, .9);
+      background: rgba(255, 255, 255, .94);
       backdrop-filter: blur(18px);
-      border-top: 1px solid rgba(209, 213, 219, .8);
     }
 
     .tab {
       flex: 1;
-      min-width: 0;
       text-align: center;
       color: #8b95a1;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 650;
-      white-space: nowrap;
     }
 
     .tab .icon {
       display: block;
-      font-size: 19px;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+      font-size: 17px;
     }
 
     .tab.active {
-      color: var(--blue);
+      color: var(--indigo);
     }
 
-    @media (max-width: 1500px) {
+    @media (max-width: 960px) {
       main {
-        grid-template-columns: repeat(3, minmax(280px, 1fr));
+        grid-template-columns: 1fr;
+      }
+
+      .phone {
+        max-width: 420px;
+        margin: 0 auto;
       }
     }
 
-    @media (max-width: 940px) {
-      main {
-        grid-template-columns: repeat(2, minmax(260px, 1fr));
-      }
-    }
-
-    @media (max-width: 620px) {
+    @media (max-width: 520px) {
       header,
       main {
         padding-left: 14px;
         padding-right: 14px;
-      }
-
-      main {
-        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>DebtOrganizer UI Preview</h1>
-    <p class="subtitle">根据 SwiftUI 源码还原的 5 个主界面：总览、账单、平台、月度、设置。</p>
+    <h1>资产管理系统 UI Preview</h1>
+    <p class="subtitle">顶层结构为总览、资产、负债；负债模块沿用并收纳原负债系统的账单、平台、月度和设置能力。</p>
   </header>
 
   <main>
     <section class="phone" aria-label="总览界面">
       <div class="screen">
-        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
-        <div class="nav"><h2>负债总览</h2></div>
+        <div class="statusbar"><span>9:41</span><span>5G ▰</span></div>
+        <div class="nav"><h2>总览</h2></div>
         <div class="content">
           <div class="scroll">
             <div class="card">
-              <div class="pressure-top">
-                <div class="label">⌁ 净现金压力</div>
-                <span class="badge red">需安排资金</span>
+              <div class="topline">
+                <div class="label">● 净资产</div>
+                <span class="badge green">资产覆盖</span>
               </div>
-              <div class="big-money">¥4,770</div>
-              <p class="note">总负债 ¥9,770，可用现金 ¥5,000</p>
+              <div class="big-money">¥44,730</div>
+              <p class="note">总资产 ¥54,500，总负债 ¥9,770</p>
             </div>
 
             <div class="metrics">
               <div class="metric">
-                <div class="metric-icon" style="color: var(--indigo)">◷</div>
-                <p class="metric-title">本月待还</p>
-                <p class="metric-value">¥7,720</p>
+                <div class="metric-icon" style="color: var(--green)">▣</div>
+                <p class="metric-title">总资产</p>
+                <p class="metric-value">¥54,500</p>
               </div>
               <div class="metric">
-                <div class="metric-icon" style="color: var(--orange)">●</div>
-                <p class="metric-title">未来 7 天</p>
-                <p class="metric-value">¥2,350</p>
-              </div>
-              <div class="metric">
-                <div class="metric-icon" style="color: var(--green)">✓</div>
-                <p class="metric-title">已还金额</p>
-                <p class="metric-value">¥1,600</p>
-              </div>
-              <div class="metric">
-                <div class="metric-icon" style="color: var(--red)">!</div>
-                <p class="metric-title">未还金额</p>
+                <div class="metric-icon" style="color: var(--red)">◆</div>
+                <p class="metric-title">总负债</p>
                 <p class="metric-value">¥9,770</p>
               </div>
-            </div>
-
-            <div class="chart-card">
-              <div class="section-title">▥ 平台负债概览</div>
-              <div class="bars">
-                <div class="bar-row"><span>京东金条</span><div class="bar-track"><div class="bar" style="width: 100%"></div></div></div>
-                <div class="bar-row"><span>抖音放心借</span><div class="bar-track"><div class="bar orange" style="width: 35%"></div></div></div>
-                <div class="bar-row"><span>花呗</span><div class="bar-track"><div class="bar red" style="width: 28%"></div></div></div>
-                <div class="bar-row"><span>京东白条</span><div class="bar-track"><div class="bar blue" style="width: 24%"></div></div></div>
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--green)">¥</div>
+                <p class="metric-title">现金类资产</p>
+                <p class="metric-value">¥5,000</p>
+              </div>
+              <div class="metric">
+                <div class="metric-icon" style="color: var(--orange)">%</div>
+                <p class="metric-title">负债率</p>
+                <p class="metric-value">18%</p>
               </div>
             </div>
 
             <div class="list-section">
-              <h3>近期待处理</h3>
-              <div class="compact-row row">
-                <div><div class="title">京东白条 · 白条消费</div><div class="sub">最晚 5月15日</div></div>
-                <div><div class="money">¥890</div><span class="badge red">逾期</span></div>
+              <div class="section-title">▦ 资产结构</div>
+              <div class="bars">
+                <div class="bar-row"><span>现金</span><div class="bar-track"><div class="bar" style="width: 9%"></div></div><b>¥5,000</b></div>
+                <div class="bar-row"><span>投资</span><div class="bar-track"><div class="bar indigo" style="width: 71%"></div></div><b>¥38,500</b></div>
+                <div class="bar-row"><span>实物</span><div class="bar-track"><div class="bar orange" style="width: 20%"></div></div><b>¥11,000</b></div>
               </div>
-              <div class="compact-row row">
-                <div><div class="title">花呗 · 消费分期</div><div class="sub">最晚 5月19日</div></div>
-                <div><div class="money">¥1,280</div><span class="badge orange">未还</span></div>
+            </div>
+
+            <div class="list-section">
+              <div class="section-title">⌁ 负债压力</div>
+              <div class="metrics">
+                <div class="metric">
+                  <p class="metric-title">本月待还</p>
+                  <p class="metric-value" style="color: var(--indigo)">¥7,720</p>
+                </div>
+                <div class="metric">
+                  <p class="metric-title">未来 7 天</p>
+                  <p class="metric-value" style="color: var(--orange)">¥2,350</p>
+                </div>
+              </div>
+              <div class="bill-row">
+                <div class="row">
+                  <div><div class="title">京东白条 · 白条消费</div><div class="sub">最晚 5月15日</div></div>
+                  <div><div class="money">¥890</div><span class="badge red">逾期</span></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <nav class="tabbar">
           <div class="tab active"><span class="icon">◔</span>总览</div>
-          <div class="tab"><span class="icon">▤</span>账单</div>
-          <div class="tab"><span class="icon">▣</span>平台</div>
-          <div class="tab"><span class="icon">□</span>月度</div>
-          <div class="tab"><span class="icon">⚙</span>设置</div>
+          <div class="tab"><span class="icon">▣</span>资产</div>
+          <div class="tab"><span class="icon">◆</span>负债</div>
         </nav>
       </div>
     </section>
 
-    <section class="phone" aria-label="账单界面">
+    <section class="phone" aria-label="资产界面">
       <div class="screen">
-        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
-        <div class="nav"><h2>账单</h2><button class="plus" aria-label="新增账单">+</button></div>
+        <div class="statusbar"><span>9:41</span><span>5G ▰</span></div>
+        <div class="nav"><h2>资产</h2><button class="plus" aria-label="新增资产">+</button></div>
         <div class="content">
-          <div class="search">搜索平台、类型或备注</div>
-          <div class="segment"><span class="active">全部</span><span>未还</span><span>已还</span><span>逾期</span></div>
-          <div class="list-section">
-            <h3>账单明细</h3>
-            <div class="bill-row">
-              <div class="row">
-                <div><div class="title">京东白条</div><div class="sub">白条消费</div></div>
-                <div><div class="money">¥890</div><span class="badge red">逾期</span></div>
+          <div class="scroll">
+            <div class="card">
+              <div class="topline">
+                <div>
+                  <div class="sub">资产总额</div>
+                  <div class="money" style="font-size: 23px; text-align: left">¥54,500</div>
+                </div>
+                <div>
+                  <div class="sub" style="text-align: right">净资产</div>
+                  <div class="money" style="color: var(--green)">¥44,730</div>
+                </div>
               </div>
-              <div class="bill-meta"><span>□ 5月15日</span><span>⚡ 自动扣款</span></div>
-              <div class="sub">家电账单，需尽快处理</div>
-            </div>
-            <div class="bill-row">
-              <div class="row">
-                <div><div class="title">花呗</div><div class="sub">消费分期</div></div>
-                <div><div class="money">¥1,280</div><span class="badge orange">未还</span></div>
+              <div class="bars" style="margin-top: 14px">
+                <div class="bar-row"><span>现金</span><div class="bar-track"><div class="bar" style="width: 9%"></div></div><b>9%</b></div>
+                <div class="bar-row"><span>投资</span><div class="bar-track"><div class="bar indigo" style="width: 71%"></div></div><b>71%</b></div>
+                <div class="bar-row"><span>实物</span><div class="bar-track"><div class="bar orange" style="width: 20%"></div></div><b>20%</b></div>
               </div>
-              <div class="bill-meta"><span>□ 5月19日</span><span>⚡ 自动扣款</span></div>
-              <div class="sub">手机分期第 2 期</div>
             </div>
-            <div class="bill-row">
-              <div class="row">
-                <div><div class="title">京东金条</div><div class="sub">借款</div></div>
-                <div><div class="money">¥2,350</div><span class="badge orange">未还</span></div>
-              </div>
-              <div class="bill-meta"><span>□ 5月23日</span></div>
-              <div class="sub">短期周转</div>
-            </div>
-            <div class="bill-row">
-              <div class="row">
-                <div><div class="title">抖音放心借</div><div class="sub">现金借款</div></div>
-                <div><div class="money">¥1,600</div><span class="badge blue">部分还款</span></div>
-              </div>
-              <div class="bill-meta"><span>□ 5月29日</span></div>
-              <div class="sub">已还 500，剩余待跟进</div>
-            </div>
-          </div>
-        </div>
-        <nav class="tabbar">
-          <div class="tab"><span class="icon">◔</span>总览</div>
-          <div class="tab active"><span class="icon">▤</span>账单</div>
-          <div class="tab"><span class="icon">▣</span>平台</div>
-          <div class="tab"><span class="icon">□</span>月度</div>
-          <div class="tab"><span class="icon">⚙</span>设置</div>
-        </nav>
-      </div>
-    </section>
 
-    <section class="phone" aria-label="平台界面">
-      <div class="screen">
-        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
-        <div class="nav"><h2>平台</h2></div>
-        <div class="content">
-          <div class="donut-wrap"><div class="donut"></div></div>
-          <div class="list-section">
-            <h3>平台账户</h3>
-            <div class="platform-row">
-              <div class="platform-row-head"><div class="title">京东金条</div><div class="money">¥5,550</div></div>
-              <div class="row sub"><span>本月 ¥2,350</span><span>5月23日</span></div>
-              <div class="sub">无自动扣款</div>
-            </div>
-            <div class="platform-row">
-              <div class="platform-row-head"><div class="title">抖音放心借</div><div class="money">¥1,600</div></div>
-              <div class="row sub"><span>本月 ¥1,600</span><span>5月29日</span></div>
-              <div class="sub">无自动扣款</div>
-            </div>
-            <div class="platform-row">
-              <div class="platform-row-head"><div class="title">花呗</div><div class="money">¥1,280</div></div>
-              <div class="row sub"><span>本月 ¥1,900</span><span>5月19日</span></div>
-              <div class="sub" style="color: var(--orange)">有自动扣款</div>
-            </div>
-            <div class="platform-row">
-              <div class="platform-row-head"><div class="title">京东白条</div><div class="money">¥1,340</div></div>
-              <div class="row sub"><span>本月 ¥890</span><span>6月6日</span></div>
-              <div class="sub" style="color: var(--orange)">有自动扣款</div>
-            </div>
-          </div>
-        </div>
-        <nav class="tabbar">
-          <div class="tab"><span class="icon">◔</span>总览</div>
-          <div class="tab"><span class="icon">▤</span>账单</div>
-          <div class="tab active"><span class="icon">▣</span>平台</div>
-          <div class="tab"><span class="icon">□</span>月度</div>
-          <div class="tab"><span class="icon">⚙</span>设置</div>
-        </nav>
-      </div>
-    </section>
+            <div class="search">搜索资产名称、分类或备注</div>
+            <div class="segment"><span class="active">全部</span><span>现金</span><span>投资</span><span>实物</span></div>
 
-    <section class="phone" aria-label="月度界面">
-      <div class="screen">
-        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
-        <div class="nav"><h2>月度</h2></div>
-        <div class="content">
-          <div class="month-chart">
-            <div class="month-bar" style="height: 52%"><span>2月</span></div>
-            <div class="month-bar" style="height: 68%"><span>3月</span></div>
-            <div class="month-bar" style="height: 64%"><span>4月</span></div>
-            <div class="month-bar" style="height: 100%"><span>5月</span></div>
-          </div>
-          <div class="list-section">
-            <h3>月度归档</h3>
-            <div class="archive-row">
-              <div class="archive-row-head"><div class="title">2026年5月</div><div class="money">¥9,770</div></div>
-              <div class="archive-grid">
-                <span>应还<b>¥7,720</b></span>
-                <span>实还<b>¥0</b></span>
-                <span>逾期<b>1 次</b></span>
+            <div class="list-section">
+              <div class="section-title">▤ 资产明细</div>
+              <div class="asset-row">
+                <div class="asset-row-head">
+                  <div><div class="title">沪深 300 指数基金</div><div class="sub">更新于 5月20日</div></div>
+                  <div><div class="money">¥18,000</div><span class="badge blue">投资</span></div>
+                </div>
+                <div class="asset-meta"><span>长期定投</span></div>
               </div>
-            </div>
-            <div class="archive-row">
-              <div class="archive-row-head"><div class="title">2026年4月</div><div class="money">¥8,200</div></div>
-              <div class="archive-grid">
-                <span>应还<b>¥4,860</b></span>
-                <span>实还<b>¥4,860</b></span>
-                <span>逾期<b>0 次</b></span>
+              <div class="asset-row">
+                <div class="asset-row-head">
+                  <div><div class="title">个人养老金</div><div class="sub">更新于 5月18日</div></div>
+                  <div><div class="money">¥12,000</div><span class="badge blue">投资</span></div>
+                </div>
+                <div class="asset-meta"><span>长期锁定资产</span></div>
               </div>
-            </div>
-            <div class="archive-row">
-              <div class="archive-row-head"><div class="title">2026年3月</div><div class="money">¥9,100</div></div>
-              <div class="archive-grid">
-                <span>应还<b>¥5,120</b></span>
-                <span>实还<b>¥4,700</b></span>
-                <span>逾期<b>1 次</b></span>
+              <div class="asset-row">
+                <div class="asset-row-head">
+                  <div><div class="title">招商银行活期</div><div class="sub">更新于 5月21日</div></div>
+                  <div><div class="money">¥3,200</div><span class="badge green">现金</span></div>
+                </div>
+                <div class="asset-meta"><span>日常周转账户</span></div>
+              </div>
+              <div class="asset-row">
+                <div class="asset-row-head">
+                  <div><div class="title">笔记本电脑</div><div class="sub">更新于 5月10日</div></div>
+                  <div><div class="money">¥6,800</div><span class="badge orange">实物</span></div>
+                </div>
+                <div class="asset-meta"><span>按当前可转让估值记录</span></div>
               </div>
             </div>
           </div>
         </div>
         <nav class="tabbar">
           <div class="tab"><span class="icon">◔</span>总览</div>
-          <div class="tab"><span class="icon">▤</span>账单</div>
-          <div class="tab"><span class="icon">▣</span>平台</div>
-          <div class="tab active"><span class="icon">□</span>月度</div>
-          <div class="tab"><span class="icon">⚙</span>设置</div>
+          <div class="tab active"><span class="icon">▣</span>资产</div>
+          <div class="tab"><span class="icon">◆</span>负债</div>
         </nav>
       </div>
     </section>
 
-    <section class="phone" aria-label="设置界面">
+    <section class="phone" aria-label="负债界面">
       <div class="screen">
-        <div class="statusbar"><span>9:41</span><span class="signal">5G ▰</span></div>
-        <div class="nav"><h2>设置</h2></div>
+        <div class="statusbar"><span>9:41</span><span>5G ▰</span></div>
+        <div class="nav"><h2>负债</h2></div>
         <div class="content">
-          <div class="settings-card">
-            <div class="field"><span>可用现金</span><span class="value">5000</span></div>
-            <div class="settings-row action">✓ 保存现金余额</div>
-          </div>
+          <div class="scroll">
+            <div class="card">
+              <div class="topline">
+                <div class="label">⌁ 净现金压力</div>
+                <span class="badge red">需安排资金</span>
+              </div>
+              <div class="big-money" style="color: var(--red)">¥4,770</div>
+              <p class="note">总负债 ¥9,770，现金类资产 ¥5,000</p>
+            </div>
 
-          <div class="settings-card">
-            <div class="settings-row title">平台名称</div>
-            <div class="settings-row">京东白条</div>
-            <div class="settings-row">京东金条</div>
-            <div class="settings-row">抖音放心借</div>
-            <div class="settings-row">花呗</div>
-          </div>
+            <div class="metrics">
+              <div class="metric">
+                <p class="metric-title">本月待还</p>
+                <p class="metric-value">¥7,720</p>
+              </div>
+              <div class="metric">
+                <p class="metric-title">未来 7 天</p>
+                <p class="metric-value">¥2,350</p>
+              </div>
+              <div class="metric">
+                <p class="metric-title">已还金额</p>
+                <p class="metric-value">¥1,600</p>
+              </div>
+              <div class="metric">
+                <p class="metric-title">未还金额</p>
+                <p class="metric-value">¥9,770</p>
+              </div>
+            </div>
 
-          <div class="settings-card">
-            <div class="settings-row title">状态枚举</div>
-            <div class="settings-row" style="color: var(--orange)">● 未还</div>
-            <div class="settings-row" style="color: var(--green)">● 已还</div>
-            <div class="settings-row" style="color: var(--red)">● 逾期</div>
-            <div class="settings-row" style="color: var(--blue)">● 部分还款</div>
-          </div>
+            <div class="list-section">
+              <div class="section-title">▦ 负债系统</div>
+              <div class="module-row">
+                <div class="module-icon" style="background:#eef2ff;color:var(--indigo)">账</div>
+                <div class="module-text"><div class="title">账单明细</div><div class="sub">搜索、筛选、新增、编辑和导入账单</div></div>
+                <span class="sub">›</span>
+              </div>
+              <div class="module-row">
+                <div class="module-icon" style="background:#fff7ed;color:var(--orange)">平</div>
+                <div class="module-text"><div class="title">平台账户</div><div class="sub">按平台汇总剩余负债和下次还款日</div></div>
+                <span class="sub">›</span>
+              </div>
+              <div class="module-row">
+                <div class="module-icon" style="background:#eff6ff;color:var(--blue)">月</div>
+                <div class="module-text"><div class="title">月度归档</div><div class="sub">查看应还、实还、逾期和期末负债</div></div>
+                <span class="sub">›</span>
+              </div>
+              <div class="module-row">
+                <div class="module-icon" style="background:#f3f4f6;color:var(--muted)">设</div>
+                <div class="module-text"><div class="title">负债设置</div><div class="sub">状态枚举、平台名称和示例数据</div></div>
+                <span class="sub">›</span>
+              </div>
+            </div>
 
-          <div class="settings-card">
-            <div class="settings-row danger">↻ 恢复 Excel 示例数据</div>
+            <div class="list-section">
+              <div class="section-title">◷ 近期待处理</div>
+              <div class="bill-row">
+                <div class="row">
+                  <div><div class="title">花呗 · 消费分期</div><div class="sub">最晚 5月19日</div></div>
+                  <div><div class="money">¥1,280</div><span class="badge orange">未还</span></div>
+                </div>
+              </div>
+              <div class="bill-row">
+                <div class="row">
+                  <div><div class="title">京东金条 · 借款</div><div class="sub">最晚 5月23日</div></div>
+                  <div><div class="money">¥2,350</div><span class="badge orange">未还</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <nav class="tabbar">
           <div class="tab"><span class="icon">◔</span>总览</div>
-          <div class="tab"><span class="icon">▤</span>账单</div>
-          <div class="tab"><span class="icon">▣</span>平台</div>
-          <div class="tab"><span class="icon">□</span>月度</div>
-          <div class="tab active"><span class="icon">⚙</span>设置</div>
+          <div class="tab"><span class="icon">▣</span>资产</div>
+          <div class="tab active"><span class="icon">◆</span>负债</div>
         </nav>
       </div>
     </section>

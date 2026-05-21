@@ -3,6 +3,7 @@ import Foundation
 final class DebtStore: ObservableObject {
     @Published private(set) var bills: [DebtBill]
     @Published private(set) var archives: [MonthlyArchive]
+    @Published private(set) var assets: [AssetItem]
     @Published private(set) var availableCash: Decimal
 
     private let storageKey = "DebtOrganizer.AppData.v1"
@@ -13,12 +14,14 @@ final class DebtStore: ObservableObject {
            let decoded = try? JSONDecoder().decode(AppData.self, from: data) {
             bills = decoded.bills
             archives = decoded.archives
-            availableCash = decoded.availableCash
+            assets = decoded.assets
+            availableCash = decoded.assets.cashTotal
         } else {
             let seed = SeedData.appData
             bills = seed.bills
             archives = seed.archives
-            availableCash = seed.availableCash
+            assets = seed.assets
+            availableCash = seed.assets.cashTotal
         }
     }
 
@@ -56,6 +59,36 @@ final class DebtStore: ObservableObject {
             availableCash: availableCash,
             cashPressure: pressure
         )
+    }
+
+    var portfolioMetrics: PortfolioMetrics {
+        let debt = metrics
+        let cashAssets = assets.total(for: .cash)
+        let investmentAssets = assets.total(for: .investment)
+        let physicalAssets = assets.total(for: .physical)
+        let totalAssets = cashAssets + investmentAssets + physicalAssets
+
+        return PortfolioMetrics(
+            totalAssets: totalAssets,
+            totalDebt: debt.totalDebt,
+            netWorth: totalAssets - debt.totalDebt,
+            cashAssets: cashAssets,
+            investmentAssets: investmentAssets,
+            physicalAssets: physicalAssets,
+            monthlyDueTotal: debt.monthlyDueTotal,
+            nextSevenDaysDue: debt.nextSevenDaysDue
+        )
+    }
+
+    var assetCategorySummaries: [AssetCategorySummary] {
+        AssetCategory.allCases.map { category in
+            let related = assets.filter { $0.category == category }
+            return AssetCategorySummary(
+                category: category,
+                total: related.sum(\.amount),
+                count: related.count
+            )
+        }
     }
 
     var platformSummaries: [PlatformSummary] {
@@ -140,6 +173,54 @@ final class DebtStore: ObservableObject {
             .map { $0 }
     }
 
+    func assets(matching query: String, filter: AssetFilter) -> [AssetItem] {
+        assets
+            .filter { asset in
+                guard let category = filter.category else { return true }
+                return asset.category == category
+            }
+            .filter { asset in
+                let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return true }
+                return asset.name.localizedCaseInsensitiveContains(trimmed)
+                    || asset.note.localizedCaseInsensitiveContains(trimmed)
+                    || asset.category.rawValue.localizedCaseInsensitiveContains(trimmed)
+            }
+            .sorted { lhs, rhs in
+                if lhs.category != rhs.category {
+                    return lhs.category.rawValue < rhs.category.rawValue
+                }
+                return lhs.amount > rhs.amount
+            }
+    }
+
+    func topAssets(limit: Int = 5) -> [AssetItem] {
+        assets
+            .sorted { $0.amount > $1.amount }
+            .prefix(limit)
+            .map { $0 }
+    }
+
+    func add(_ asset: AssetItem) {
+        assets.append(asset)
+        syncAvailableCash()
+        save()
+    }
+
+    func update(_ asset: AssetItem) {
+        guard let index = assets.firstIndex(where: { $0.id == asset.id }) else { return }
+        assets[index] = asset
+        syncAvailableCash()
+        save()
+    }
+
+    func delete(_ assetsToDelete: [AssetItem]) {
+        let ids = Set(assetsToDelete.map(\.id))
+        assets.removeAll { ids.contains($0.id) }
+        syncAvailableCash()
+        save()
+    }
+
     func add(_ bill: DebtBill) {
         bills.append(bill)
         save()
@@ -178,7 +259,23 @@ final class DebtStore: ObservableObject {
     }
 
     func updateAvailableCash(_ cash: Decimal) {
-        availableCash = cash
+        let delta = cash - assets.cashTotal
+        if let index = assets.firstIndex(where: { $0.category == .cash }) {
+            assets[index].amount += delta
+            assets[index].updatedAt = .now
+        } else {
+            assets.insert(
+                AssetItem(
+                    name: "可用现金",
+                    category: .cash,
+                    amount: cash,
+                    updatedAt: .now,
+                    note: "负债现金压力使用"
+                ),
+                at: 0
+            )
+        }
+        syncAvailableCash()
         save()
     }
 
@@ -186,15 +283,20 @@ final class DebtStore: ObservableObject {
         let seed = SeedData.appData
         bills = seed.bills
         archives = seed.archives
-        availableCash = seed.availableCash
+        assets = seed.assets
+        availableCash = seed.assets.cashTotal
         save()
     }
 
     private func save() {
-        let data = AppData(bills: bills, archives: archives, availableCash: availableCash)
+        let data = AppData(bills: bills, archives: archives, availableCash: availableCash, assets: assets)
         if let encoded = try? JSONEncoder().encode(data) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
         }
+    }
+
+    private func syncAvailableCash() {
+        availableCash = assets.cashTotal
     }
 
     private func currentMonthInterval() -> (start: Date, end: Date) {
@@ -206,6 +308,20 @@ final class DebtStore: ObservableObject {
 
 private extension Array where Element == DebtBill {
     func sum(_ keyPath: KeyPath<DebtBill, Decimal>) -> Decimal {
+        reduce(0) { $0 + $1[keyPath: keyPath] }
+    }
+}
+
+private extension Array where Element == AssetItem {
+    var cashTotal: Decimal {
+        total(for: .cash)
+    }
+
+    func total(for category: AssetCategory) -> Decimal {
+        filter { $0.category == category }.sum(\.amount)
+    }
+
+    func sum(_ keyPath: KeyPath<AssetItem, Decimal>) -> Decimal {
         reduce(0) { $0 + $1[keyPath: keyPath] }
     }
 }
@@ -345,6 +461,64 @@ enum SeedData {
                 endingDebt: 7600
             )
         ],
-        availableCash: 5000
+        availableCash: 5000,
+        assets: [
+            AssetItem(
+                name: "招商银行活期",
+                category: .cash,
+                amount: 3200,
+                updatedAt: .appDate(2026, 5, 21),
+                note: "日常周转账户"
+            ),
+            AssetItem(
+                name: "微信零钱",
+                category: .cash,
+                amount: 1200,
+                updatedAt: .appDate(2026, 5, 21),
+                note: "小额支付余额"
+            ),
+            AssetItem(
+                name: "支付宝余额",
+                category: .cash,
+                amount: 600,
+                updatedAt: .appDate(2026, 5, 21),
+                note: "备用现金"
+            ),
+            AssetItem(
+                name: "沪深 300 指数基金",
+                category: .investment,
+                amount: 18000,
+                updatedAt: .appDate(2026, 5, 20),
+                note: "长期定投"
+            ),
+            AssetItem(
+                name: "股票账户",
+                category: .investment,
+                amount: 8500,
+                updatedAt: .appDate(2026, 5, 20),
+                note: "主动投资仓位"
+            ),
+            AssetItem(
+                name: "个人养老金",
+                category: .investment,
+                amount: 12000,
+                updatedAt: .appDate(2026, 5, 18),
+                note: "长期锁定资产"
+            ),
+            AssetItem(
+                name: "笔记本电脑",
+                category: .physical,
+                amount: 6800,
+                updatedAt: .appDate(2026, 5, 10),
+                note: "按当前可转让估值记录"
+            ),
+            AssetItem(
+                name: "摄影设备",
+                category: .physical,
+                amount: 4200,
+                updatedAt: .appDate(2026, 5, 8),
+                note: "镜头与机身合计估值"
+            )
+        ]
     )
 }

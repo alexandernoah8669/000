@@ -48,6 +48,78 @@ enum BillFilter: String, CaseIterable, Identifiable {
     }
 }
 
+enum AssetCategory: String, CaseIterable, Codable, Identifiable {
+    case cash = "现金类资产"
+    case investment = "投资类资产"
+    case physical = "实物资产"
+
+    var id: String { rawValue }
+
+    var shortTitle: String {
+        switch self {
+        case .cash:
+            return "现金"
+        case .investment:
+            return "投资"
+        case .physical:
+            return "实物"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .cash:
+            return "banknote.fill"
+        case .investment:
+            return "chart.line.uptrend.xyaxis"
+        case .physical:
+            return "shippingbox.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .cash:
+            return .green
+        case .investment:
+            return .indigo
+        case .physical:
+            return .orange
+        }
+    }
+}
+
+enum AssetFilter: String, CaseIterable, Identifiable {
+    case all = "全部"
+    case cash = "现金"
+    case investment = "投资"
+    case physical = "实物"
+
+    var id: String { rawValue }
+
+    var category: AssetCategory? {
+        switch self {
+        case .all:
+            return nil
+        case .cash:
+            return .cash
+        case .investment:
+            return .investment
+        case .physical:
+            return .physical
+        }
+    }
+}
+
+struct AssetItem: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var name: String
+    var category: AssetCategory
+    var amount: Decimal
+    var updatedAt: Date
+    var note: String
+}
+
 struct DebtBill: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
     var platform: String
@@ -81,6 +153,13 @@ struct PlatformSummary: Identifiable, Equatable {
     var autoDeduct: Bool
 }
 
+struct AssetCategorySummary: Identifiable, Equatable {
+    var id: AssetCategory { category }
+    var category: AssetCategory
+    var total: Decimal
+    var count: Int
+}
+
 struct DebtMetrics: Equatable {
     var monthlyDueTotal: Decimal
     var nextSevenDaysDue: Decimal
@@ -91,10 +170,83 @@ struct DebtMetrics: Equatable {
     var cashPressure: Decimal
 }
 
+struct PortfolioMetrics: Equatable {
+    var totalAssets: Decimal
+    var totalDebt: Decimal
+    var netWorth: Decimal
+    var cashAssets: Decimal
+    var investmentAssets: Decimal
+    var physicalAssets: Decimal
+    var monthlyDueTotal: Decimal
+    var nextSevenDaysDue: Decimal
+
+    var debtToAssetRatio: Double {
+        guard totalAssets.doubleValue > 0 else { return 0 }
+        return totalDebt.doubleValue / totalAssets.doubleValue
+    }
+
+    var cashCoverageRatio: Double {
+        guard nextSevenDaysDue.doubleValue > 0 else { return 1 }
+        return cashAssets.doubleValue / nextSevenDaysDue.doubleValue
+    }
+}
+
 struct AppData: Codable {
     var bills: [DebtBill]
     var archives: [MonthlyArchive]
     var availableCash: Decimal
+    var assets: [AssetItem]
+
+    init(
+        bills: [DebtBill],
+        archives: [MonthlyArchive],
+        availableCash: Decimal,
+        assets: [AssetItem]? = nil
+    ) {
+        self.bills = bills
+        self.archives = archives
+        self.availableCash = availableCash
+        self.assets = assets ?? [
+            AssetItem(
+                name: "可用现金",
+                category: .cash,
+                amount: availableCash,
+                updatedAt: .now,
+                note: "从负债系统现金余额生成"
+            )
+        ]
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case bills
+        case archives
+        case availableCash
+        case assets
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        bills = try container.decode([DebtBill].self, forKey: .bills)
+        archives = try container.decode([MonthlyArchive].self, forKey: .archives)
+        availableCash = try container.decodeIfPresent(Decimal.self, forKey: .availableCash) ?? 0
+        assets = try container.decodeIfPresent([AssetItem].self, forKey: .assets) ?? [
+            AssetItem(
+                name: "可用现金",
+                category: .cash,
+                amount: availableCash,
+                updatedAt: .now,
+                note: "从旧版负债系统迁移"
+            )
+        ]
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(bills, forKey: .bills)
+        try container.encode(archives, forKey: .archives)
+        try container.encode(availableCash, forKey: .availableCash)
+        try container.encode(assets, forKey: .assets)
+    }
 }
 
 extension Decimal {
@@ -126,6 +278,14 @@ enum Formatters {
         return formatter
     }()
 
+    static let percent: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.numberStyle = .percent
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+
     static let date: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "zh_CN")
@@ -146,6 +306,10 @@ enum Formatters {
 
     static func decimalText(_ amount: Decimal) -> String {
         NSDecimalNumber(decimal: amount).stringValue
+    }
+
+    static func percentText(_ value: Double) -> String {
+        percent.string(from: NSNumber(value: value)) ?? "0%"
     }
 
     static func decimal(from text: String) -> Decimal {
